@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Wedding of Ahmad & Siti — 3D Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#c9a96e;--gold-light:#e8d5b0;--cream:#fdf8f0;
+  --dark:#0a0806;--muted:#6b5c4c;
+}
+html{scroll-behavior:smooth}
+body{background:var(--dark);color:#fff;font-family:'Lato',sans-serif;overflow-x:hidden}
+
+/* CANVAS */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* COVER */
+#cover{
+  position:fixed;inset:0;z-index:100;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 1.5s ease,transform 1.5s cubic-bezier(.77,0,.175,1);
+}
+#cover.hidden{opacity:0;transform:scale(1.1);pointer-events:none}
+#ring-canvas{width:280px;height:280px;display:block;margin:0 auto}
+.cover-sub{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.4em;
+  color:var(--gold);text-transform:uppercase;text-align:center;
+  opacity:0;animation:fadeUp 1s ease 1s forwards;margin-top:-1rem;
+}
+.cover-names{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,8vw,5rem);
+  font-weight:300;text-align:center;color:#fff;line-height:1;
+  opacity:0;animation:fadeUp 1s ease 1.3s forwards;
+}
+.cover-names em{color:var(--gold);font-style:italic}
+.cover-guest{
+  font-family:'Lato',sans-serif;font-weight:300;font-size:0.8rem;
+  letter-spacing:0.2em;color:rgba(255,255,255,0.5);text-align:center;
+  margin-top:0.8rem;opacity:0;animation:fadeUp 1s ease 1.6s forwards;
+}
+.open-btn{
+  margin-top:2.5rem;padding:1rem 3rem;
+  border:1px solid var(--gold);background:transparent;
+  color:var(--gold);font-family:'Cinzel',serif;font-size:0.7rem;
+  letter-spacing:0.3em;text-transform:uppercase;cursor:pointer;
+  opacity:0;animation:fadeUp 1s ease 2s forwards;
+  transition:all 0.4s ease;position:relative;overflow:hidden;z-index:1;
+}
+.open-btn::after{
+  content:'';position:absolute;inset:0;background:var(--gold);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.4s ease;z-index:-1;
+}
+.open-btn:hover::after{transform:scaleX(1)}
+.open-btn:hover{color:var(--dark)}
+
+/* MAIN */
+#main{position:relative;z-index:1;opacity:0;transition:opacity 1s ease}
+#main.visible{opacity:1}
+
+/* HERO */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  position:relative;padding:4rem 2rem;overflow:hidden;
+}
+#hero-canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero-content{position:relative;z-index:1;text-align:center}
+.hero-pre{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.5em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:2rem;
+  opacity:0;transform:translateY(20px);
+  transition:opacity 0.8s ease 0.3s,transform 0.8s ease 0.3s;
+}
+.hero-pre.vis{opacity:1;transform:none}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,12vw,9rem);
+  font-weight:300;line-height:0.88;color:#fff;
+  opacity:0;transform:translateY(40px);
+  transition:opacity 1s ease 0.5s,transform 1s ease 0.5s;
+}
+.hero-title.vis{opacity:1;transform:none}
+.hero-title .amp{
+  display:block;font-style:italic;color:var(--gold);
+  font-size:0.6em;margin:0.3em 0;
+}
+.hero-date-strip{
+  margin-top:3rem;display:flex;align-items:center;gap:1.5rem;
+  opacity:0;transform:translateY(20px);
+  transition:opacity 0.8s ease 0.8s,transform 0.8s ease 0.8s;
+}
+.hero-date-strip.vis{opacity:1;transform:none}
+.date-line{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--gold))}
+.date-line.r{background:linear-gradient(to left,transparent,var(--gold))}
+.date-text{
+  font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.3em;
+  color:var(--gold-light);white-space:nowrap;
+}
+
+/* FLOATING PARTICLES SECTION */
+.section-wrap{
+  position:relative;padding:6rem 2rem;max-width:700px;margin:0 auto;
+}
+.reveal{
+  opacity:0;transform:translateY(50px);
+  transition:opacity 0.9s ease,transform 0.9s ease;
+}
+.reveal.vis{opacity:1;transform:none}
+
+/* QUOTE */
+.quote-wrap{
+  position:relative;padding:6rem 2rem;text-align:center;
+  overflow:hidden;
+}
+#quote-canvas{position:absolute;inset:0;width:100%;height:100%}
+.quote-inner{position:relative;z-index:1;max-width:600px;margin:0 auto}
+.quote-mark{
+  font-family:'Cormorant Garamond',serif;font-size:8rem;
+  color:var(--gold);opacity:0.15;line-height:0.5;
+  display:block;margin-bottom:-1rem;
+}
+.quote-text{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(1.1rem,2.5vw,1.5rem);line-height:1.9;
+  color:rgba(255,255,255,0.85);
+}
+.quote-ref{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.25em;
+  color:var(--gold);margin-top:1.5rem;
+}
+
+/* COUPLE */
+.couple-section{padding:6rem 2rem;max-width:800px;margin:0 auto}
+.section-label{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.4em;
+  color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:1rem;
+}
+.couple-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:2rem;align-items:center;margin-top:3rem}
+.person{text-align:center}
+.person-photo-3d{
+  width:200px;height:260px;margin:0 auto 1.5rem;
+  position:relative;
+  perspective:600px;cursor:pointer;
+}
+.person-photo-inner{
+  width:100%;height:100%;
+  transform-style:preserve-3d;
+  transition:transform 0.6s ease;
+  position:relative;
+}
+.person-photo-3d:hover .person-photo-inner{
+  transform:rotateY(8deg) rotateX(-5deg);
+}
+.photo-face{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#1a1208,#0a0806);
+  border:1px solid rgba(201,169,110,0.3);
+  display:flex;align-items:center;justify-content:center;
+  backface-visibility:hidden;
+}
+.photo-glow{
+  position:absolute;inset:-1px;
+  background:linear-gradient(135deg,rgba(201,169,110,0.15),transparent,rgba(201,169,110,0.1));
+  pointer-events:none;
+  transition:opacity 0.4s ease;
+  opacity:0;
+}
+.person-photo-3d:hover .photo-glow{opacity:1}
+.photo-icon{
+  font-family:'Cormorant Garamond',serif;
+  font-size:5rem;color:rgba(201,169,110,0.15);
+}
+.photo-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);
+  padding:1.5rem 1rem 1rem;
+  font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;
+  color:var(--gold);text-transform:uppercase;
+}
+.person-name{
+  font-family:'Cormorant Garamond',serif;font-size:1.6rem;
+  color:#fff;font-weight:300;margin-bottom:0.5rem;
+}
+.person-parents{
+  font-size:0.78rem;color:rgba(255,255,255,0.45);line-height:1.7;
+  font-weight:300;
+}
+.big-and{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:4rem;color:var(--gold);text-align:center;
+  opacity:0.8;
+}
+@media(max-width:600px){
+  .couple-grid{grid-template-columns:1fr;text-align:center}
+  .big-and{font-size:2.5rem}
+  .person-photo-3d{width:160px;height:210px}
+}
+
+/* COUNTDOWN */
+.countdown-wrap{
+  padding:6rem 2rem;text-align:center;position:relative;overflow:hidden;
+}
+#count-canvas{position:absolute;inset:0;width:100%;height:100%}
+.countdown-inner{position:relative;z-index:1}
+.count-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1rem;max-width:480px;margin:2.5rem auto 0;
+}
+.count-box{
+  position:relative;border:1px solid rgba(201,169,110,0.2);
+  padding:2rem 0.5rem;overflow:hidden;
+  transition:border-color 0.3s ease;
+}
+.count-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(201,169,110,0.06),transparent);
+}
+.count-box:hover{border-color:rgba(201,169,110,0.5)}
+.count-num{
+  font-family:'Cinzel',serif;font-size:clamp(2rem,5vw,3rem);
+  color:var(--gold);display:block;position:relative;
+  transition:transform 0.3s ease;
+}
+.count-box:hover .count-num{transform:scale(1.1)}
+.count-lbl{
+  font-size:0.55rem;letter-spacing:0.25em;
+  color:rgba(255,255,255,0.35);text-transform:uppercase;
+  margin-top:0.5rem;display:block;
+}
+
+/* EVENT */
+.event-wrap{padding:6rem 2rem;max-width:700px;margin:0 auto}
+.event-card-3d{
+  border:1px solid rgba(201,169,110,0.2);padding:2.5rem;
+  margin-bottom:1.5rem;position:relative;overflow:hidden;
+  transition:border-color 0.4s ease,transform 0.4s ease;
+  transform-style:preserve-3d;
+  cursor:default;
+}
+.event-card-3d::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(to right,transparent,var(--gold),transparent);
+  transform:scaleX(0);transition:transform 0.5s ease;
+}
+.event-card-3d:hover::before{transform:scaleX(1)}
+.event-card-3d:hover{
+  border-color:rgba(201,169,110,0.4);
+  transform:translateY(-4px);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5),0 0 30px rgba(201,169,110,0.05);
+}
+.event-type{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.35em;
+  color:var(--gold);text-transform:uppercase;margin-bottom:1rem;
+}
+.event-time{
+  font-family:'Cormorant Garamond',serif;font-size:2rem;
+  color:#fff;font-weight:300;margin-bottom:1rem;
+}
+.event-info{font-size:0.85rem;color:rgba(255,255,255,0.5);line-height:1.9}
+.map-link{
+  display:inline-block;margin-top:1.2rem;
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;
+  color:var(--gold);text-decoration:none;text-transform:uppercase;
+  border-bottom:1px solid rgba(201,169,110,0.3);padding-bottom:2px;
+  transition:border-color 0.3s ease;
+}
+.map-link:hover{border-color:var(--gold)}
+
+/* GALLERY 3D */
+.gallery-wrap{padding:6rem 2rem;overflow:hidden}
+.gallery-label{
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.4em;
+  color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:3rem;
+}
+.gallery-3d{
+  display:flex;gap:1rem;perspective:1200px;
+  justify-content:center;flex-wrap:wrap;
+}
+.gal-item{
+  width:180px;height:240px;flex-shrink:0;
+  border:1px solid rgba(201,169,110,0.15);
+  background:linear-gradient(135deg,#111,#0a0806);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+  transition:transform 0.5s ease,border-color 0.4s ease,box-shadow 0.5s ease;
+  transform-style:preserve-3d;
+}
+.gal-item:hover{
+  transform:translateZ(30px) rotateY(-8deg);
+  border-color:rgba(201,169,110,0.4);
+  box-shadow:8px 8px 40px rgba(0,0,0,0.6),0 0 20px rgba(201,169,110,0.08);
+}
+.gal-item::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(201,169,110,0.08),transparent);
+  opacity:0;transition:opacity 0.4s ease;
+}
+.gal-item:hover::after{opacity:1}
+.gal-placeholder{
+  font-family:'Cormorant Garamond',serif;font-size:0.65rem;
+  letter-spacing:0.2em;color:rgba(201,169,110,0.2);text-align:center;
+}
+
+/* GIFT */
+.gift-wrap{padding:6rem 2rem;max-width:600px;margin:0 auto}
+.gift-card{
+  border:1px solid rgba(201,169,110,0.2);padding:2rem;
+  margin-bottom:1rem;transition:all 0.4s ease;position:relative;
+}
+.gift-card:hover{border-color:rgba(201,169,110,0.4);transform:translateX(4px)}
+.gift-bank-row{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.bank-badge{
+  border:1px solid rgba(201,169,110,0.4);
+  font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;
+  color:var(--gold);padding:0.35rem 0.8rem;
+}
+.acc-number{
+  font-family:'Cormorant Garamond',serif;font-size:2rem;
+  color:#fff;letter-spacing:0.05em;
+}
+.acc-name{font-size:0.78rem;color:rgba(255,255,255,0.4);margin-top:0.3rem}
+.copy-btn{
+  margin-top:1rem;padding:0.5rem 1.5rem;
+  background:transparent;border:1px solid rgba(201,169,110,0.3);
+  color:var(--gold);font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;
+  transition:all 0.3s ease;
+}
+.copy-btn:hover{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+
+/* RSVP */
+.rsvp-wrap{
+  padding:6rem 2rem;max-width:560px;margin:0 auto;
+}
+.form-field{margin-bottom:1.2rem}
+.form-field label{
+  display:block;font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.25em;color:var(--gold);text-transform:uppercase;
+  margin-bottom:0.6rem;
+}
+.form-field input,.form-field textarea{
+  width:100%;padding:0.85rem 1rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(201,169,110,0.2);
+  border-bottom:1px solid rgba(201,169,110,0.4);
+  color:#fff;font-family:'Lato',sans-serif;font-size:0.9rem;
+  outline:none;transition:all 0.3s ease;
+}
+.form-field input:focus,.form-field textarea:focus{
+  background:rgba(201,169,110,0.04);
+  border-color:rgba(201,169,110,0.5);
+}
+.form-field textarea{min-height:90px;resize:vertical}
+.attend-row{display:flex;gap:0.8rem;margin-bottom:1.5rem}
+.att-btn{
+  flex:1;padding:0.8rem;border:1px solid rgba(201,169,110,0.2);
+  background:transparent;color:rgba(255,255,255,0.5);
+  font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;
+  text-transform:uppercase;cursor:pointer;transition:all 0.3s ease;
+}
+.att-btn.on{border-color:var(--gold);color:var(--gold);background:rgba(201,169,110,0.06)}
+.submit-btn{
+  width:100%;padding:1rem;background:transparent;
+  border:1px solid var(--gold);color:var(--gold);
+  font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.3em;
+  text-transform:uppercase;cursor:pointer;
+  transition:all 0.4s ease;position:relative;overflow:hidden;z-index:1;
+}
+.submit-btn::after{
+  content:'';position:absolute;inset:0;background:var(--gold);
+  transform:scaleY(0);transform-origin:bottom;
+  transition:transform 0.4s ease;z-index:-1;
+}
+.submit-btn:hover::after{transform:scaleY(1)}
+.submit-btn:hover{color:var(--dark)}
+.wishes{margin-top:2rem;display:flex;flex-direction:column;gap:0.8rem}
+.wish{
+  border-left:2px solid rgba(201,169,110,0.25);
+  padding:0.8rem 1rem;background:rgba(255,255,255,0.02);
+  animation:slideIn 0.5s ease forwards;
+}
+.wish-n{
+  font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;
+  color:var(--gold);margin-bottom:0.4rem;
+}
+.wish-m{font-size:0.83rem;color:rgba(255,255,255,0.6);line-height:1.6}
+.wish-tag{
+  font-size:0.55rem;letter-spacing:0.1em;padding:2px 8px;
+  border-radius:20px;margin-left:6px;font-family:'Cinzel',serif;
+}
+.hadir{background:rgba(100,200,100,0.1);color:#7dcb7d;border:1px solid rgba(100,200,100,0.15)}
+.absen{background:rgba(200,100,100,0.1);color:#cb8080;border:1px solid rgba(200,100,100,0.15)}
+
+/* CLOSING */
+.closing{
+  min-height:70vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:6rem 2rem;text-align:center;position:relative;overflow:hidden;
+}
+#closing-canvas{position:absolute;inset:0;width:100%;height:100%}
+.closing-inner{position:relative;z-index:1}
+.closing-names{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.5rem,8vw,6rem);
+  font-weight:300;color:#fff;line-height:1;
+}
+.closing-names em{color:var(--gold);font-style:italic}
+.closing-sub{
+  font-family:'Lato',sans-serif;font-weight:300;font-size:0.8rem;
+  color:rgba(255,255,255,0.35);margin-top:1.5rem;letter-spacing:0.15em;
+}
+
+/* MUSIC */
+.music-fab{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;
+  width:46px;height:46px;border-radius:50%;
+  background:rgba(201,169,110,0.15);
+  border:1px solid rgba(201,169,110,0.4);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s ease;backdrop-filter:blur(10px);
+}
+.music-fab:hover{background:var(--gold);border-color:var(--gold)}
+.music-fab:hover svg{fill:var(--dark)}
+.music-fab svg{width:16px;height:16px;fill:var(--gold);transition:fill 0.3s ease}
+.music-fab.on{background:var(--gold);border-color:var(--gold)}
+.music-fab.on svg{fill:var(--dark)}
+.music-fab .p-icon{display:block}
+.music-fab .s-icon{display:none}
+.music-fab.on .p-icon{display:none}
+.music-fab.on .s-icon{display:block}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(25px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-15px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{from{transform:rotateY(0deg)}to{transform:rotateY(360deg)}}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- COVER -->
+<div id="cover">
+  <canvas id="ring-canvas" width="280" height="280"></canvas>
+  <p class="cover-sub">The Wedding of</p>
+  <h1 class="cover-names">Ahmad <em>&</em> Siti</h1>
+  <p class="cover-guest" id="guestName">Kepada: Tamu Undangan</p>
+  <button class="open-btn" onclick="openInv()">✦ Buka Undangan ✦</button>
+</div>
+
+<!-- MUSIC -->
+<button class="music-fab" id="mBtn" onclick="toggleMusic()">
+  <svg class="p-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+  <svg class="s-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+</button>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <p class="hero-pre" id="hp">The Wedding of</p>
+      <h1 class="hero-title" id="ht">
+        Ahmad
+        <span class="amp">&</span>
+        Siti
+      </h1>
+      <div class="hero-date-strip" id="hd">
+        <div class="date-line"></div>
+        <span class="date-text">Sabtu · 14 Februari 2026</span>
+        <div class="date-line r"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="quote-wrap">
+    <canvas id="quote-canvas"></canvas>
+    <div class="quote-inner reveal">
+      <span class="quote-mark">"</span>
+      <p class="quote-text">
+        Dan di antara tanda-tanda kebesaran-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya.
+      </p>
+      <p class="quote-ref">QS. Ar-Rum (30) : 21</p>
+    </div>
+  </div>
+
+  <!-- COUPLE -->
+  <div class="couple-section">
+    <p class="section-label reveal">Mempelai</p>
+    <div class="couple-grid reveal">
+      <div class="person">
+        <div class="person-photo-3d">
+          <div class="person-photo-inner">
+            <div class="photo-face">
+              <span class="photo-icon">♂</span>
+              <div class="photo-glow"></div>
+            </div>
+          </div>
+          <div class="photo-label">Pengantin Pria</div>
+        </div>
+        <h3 class="person-name">Ahmad Fadillah</h3>
+        <p class="person-parents">Putra Pertama dari<br><strong style="color:rgba(255,255,255,0.7)">Bapak H. Mahmud</strong><br>& <strong style="color:rgba(255,255,255,0.7)">Ibu Hj. Fatimah</strong></p>
+      </div>
+      <div class="big-and">⁊</div>
+      <div class="person">
+        <div class="person-photo-3d">
+          <div class="person-photo-inner">
+            <div class="photo-face">
+              <span class="photo-icon">♀</span>
+              <div class="photo-glow"></div>
+            </div>
+          </div>
+          <div class="photo-label">Pengantin Wanita</div>
+        </div>
+        <h3 class="person-name">Siti Nurhaliza</h3>
+        <p class="person-parents">Putri Kedua dari<br><strong style="color:rgba(255,255,255,0.7)">Bapak H. Ridwan</strong><br>& <strong style="color:rgba(255,255,255,0.7)">Ibu Hj. Aminah</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-wrap">
+    <canvas id="count-canvas"></canvas>
+    <div class="countdown-inner">
+      <p class="section-label reveal" style="color:var(--gold)">Menghitung Hari</p>
+      <p class="reveal" style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:rgba(255,255,255,0.7);margin-top:0.5rem">Insya Allah, kami menikah dalam</p>
+      <div class="count-grid reveal">
+        <div class="count-box"><span class="count-num" id="d">00</span><span class="count-lbl">Hari</span></div>
+        <div class="count-box"><span class="count-num" id="h">00</span><span class="count-lbl">Jam</span></div>
+        <div class="count-box"><span class="count-num" id="m">00</span><span class="count-lbl">Menit</span></div>
+        <div class="count-box"><span class="count-num" id="s">00</span><span class="count-lbl">Detik</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="event-wrap">
+    <p class="section-label reveal">Waktu & Tempat</p>
+    <div class="event-card-3d reveal" style="transition-delay:0.1s">
+      <p class="event-type">✦ Akad Nikah</p>
+      <p class="event-time">08.00 WIB</p>
+      <p class="event-info">Sabtu, 14 Februari 2026<br><br><strong style="color:rgba(255,255,255,0.7)">Gedung Serbaguna</strong><br>Jl. Merdeka No. 1, Kota Ambon, Maluku</p>
+      <a href="#" class="map-link">↗ Buka Google Maps</a>
+    </div>
+    <div class="event-card-3d reveal" style="transition-delay:0.2s">
+      <p class="event-type">✦ Resepsi Pernikahan</p>
+      <p class="event-time">10.00 – Selesai</p>
+      <p class="event-info">Sabtu, 14 Februari 2026<br><br><strong style="color:rgba(255,255,255,0.7)">Gedung Serbaguna</strong><br>Jl. Merdeka No. 1, Kota Ambon, Maluku</p>
+      <a href="#" class="map-link">↗ Buka Google Maps</a>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="gallery-wrap">
+    <p class="gallery-label reveal">Galeri Foto</p>
+    <div class="gallery-3d reveal">
+      <div class="gal-item"><div class="gal-placeholder">FOTO<br>PREWEDDING<br>1</div></div>
+      <div class="gal-item"><div class="gal-placeholder">FOTO<br>PREWEDDING<br>2</div></div>
+      <div class="gal-item"><div class="gal-placeholder">FOTO<br>PREWEDDING<br>3</div></div>
+      <div class="gal-item"><div class="gal-placeholder">FOTO<br>PREWEDDING<br>4</div></div>
+    </div>
+  </div>
+
+  <!-- GIFT -->
+  <div class="gift-wrap">
+    <p class="section-label reveal">Wedding Gift</p>
+    <div class="gift-card reveal" style="transition-delay:0.1s">
+      <div class="gift-bank-row">
+        <span class="bank-badge">BCA</span>
+        <span style="font-size:0.75rem;color:rgba(255,255,255,0.4)">Bank Central Asia</span>
+      </div>
+      <p class="acc-number" id="acc1">1234 5678 90</p>
+      <p class="acc-name">a/n Siti Nurhaliza</p>
+      <button class="copy-btn" onclick="cp('acc1',this)">Copy Nomor</button>
+    </div>
+    <div class="gift-card reveal" style="transition-delay:0.2s">
+      <div class="gift-bank-row">
+        <span class="bank-badge" style="color:#f97316;border-color:rgba(249,115,22,0.4)">BNI</span>
+        <span style="font-size:0.75rem;color:rgba(255,255,255,0.4)">Bank Negara Indonesia</span>
+      </div>
+      <p class="acc-number" id="acc2">0987 6543 21</p>
+      <p class="acc-name">a/n Ahmad Fadillah</p>
+      <button class="copy-btn" onclick="cp('acc2',this)">Copy Nomor</button>
+    </div>
+  </div>
+
+  <!-- RSVP -->
+  <div class="rsvp-wrap">
+    <p class="section-label reveal">RSVP & Ucapan</p>
+    <div class="reveal">
+      <div class="form-field">
+        <label>Nama</label>
+        <input type="text" id="rName" placeholder="Nama lengkap Anda">
+      </div>
+      <div class="form-field">
+        <label>Ucapan & Doa</label>
+        <textarea id="rMsg" placeholder="Tulis ucapan terbaik Anda..."></textarea>
+      </div>
+      <div class="attend-row">
+        <button class="att-btn on" id="btnH" onclick="setA('hadir')">✓ Hadir</button>
+        <button class="att-btn" id="btnA" onclick="setA('absen')">✗ Tidak Hadir</button>
+      </div>
+      <button class="submit-btn" onclick="submitR()">Kirim Ucapan ✦</button>
+    </div>
+    <div class="wishes" id="wishes">
+      <div class="wish">
+        <p class="wish-n">Budi Santoso <span class="wish-tag hadir">Hadir</span></p>
+        <p class="wish-m">Selamat menempuh hidup baru! Semoga menjadi keluarga yang sakinah mawaddah warahmah. Barakallahu lakuma.</p>
+      </div>
+      <div class="wish">
+        <p class="wish-n">Dewi Rahayu <span class="wish-tag absen">Tidak Hadir</span></p>
+        <p class="wish-m">Doa terbaik selalu menyertai kalian. Semoga bahagia selamanya!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLOSING -->
+  <div class="closing">
+    <canvas id="closing-canvas"></canvas>
+    <div class="closing-inner reveal">
+      <p class="section-label">Terima Kasih</p>
+      <h2 class="closing-names" style="margin-top:1.5rem">Ahmad <em>&</em> Siti</h2>
+      <p class="closing-sub">Sabtu · 14 Februari 2026 · Kota Ambon</p>
+      <p style="margin-top:3rem;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.3em;color:rgba(201,169,110,0.25)">Made with ♥ · Undangan Digital Premium</p>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// GUEST NAME
+const params=new URLSearchParams(window.location.search);
+const guest=params.get('to')||params.get('nama')||'Tamu Undangan';
+document.getElementById('guestName').textContent='Kepada: '+guest;
+
+// ============ RING 3D (Cover) ============
+(function(){
+  const c=document.getElementById('ring-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(280,280);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(45,1,0.1,100);
+  camera.position.set(0,0,5);
+
+  // Ring (torus)
+  const geo=new THREE.TorusGeometry(1.4,0.12,64,200);
+  const mat=new THREE.MeshStandardMaterial({
+    color:0xc9a96e,metalness:0.9,roughness:0.15,
+  });
+  const ring=new THREE.Mesh(geo,mat);
+  scene.add(ring);
+
+  // Inner ring
+  const geo2=new THREE.TorusGeometry(1.2,0.05,32,100);
+  const mat2=new THREE.MeshStandardMaterial({color:0xe8d5b0,metalness:0.95,roughness:0.1});
+  const ring2=new THREE.Mesh(geo2,mat2);
+  scene.add(ring2);
+
+  // Particles around ring
+  const pts=[];
+  for(let i=0;i<300;i++){
+    const angle=Math.random()*Math.PI*2;
+    const r=1.3+Math.random()*0.4;
+    const spread=(Math.random()-0.5)*0.5;
+    pts.push(Math.cos(angle)*r,Math.sin(angle)*r+spread*0.2,spread);
+  }
+  const pgeo=new THREE.BufferGeometry();
+  pgeo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+  const pmat=new THREE.PointsMaterial({color:0xc9a96e,size:0.02,transparent:true,opacity:0.6});
+  scene.add(new THREE.Points(pgeo,pmat));
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xffffff,0.3));
+  const dl=new THREE.DirectionalLight(0xffd89b,2);dl.position.set(2,3,4);scene.add(dl);
+  const dl2=new THREE.DirectionalLight(0xffffff,1);dl2.position.set(-3,-1,2);scene.add(dl2);
+  const pl=new THREE.PointLight(0xc9a96e,1,10);pl.position.set(0,0,3);scene.add(pl);
+
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t+=0.008;
+    ring.rotation.x=Math.sin(t*0.5)*0.3+0.5;
+    ring.rotation.y=t;
+    ring2.rotation.x=Math.sin(t*0.5)*0.3+0.5;
+    ring2.rotation.y=t*1.2+0.5;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ============ BG PARTICLES (Global) ============
+(function(){
+  const c=document.getElementById('bg-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas:c,alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,1000);
+  camera.position.z=30;
+
+  const pts=[];
+  for(let i=0;i<800;i++){
+    pts.push((Math.random()-0.5)*120,(Math.random()-0.5)*80,(Math.random()-0.5)*60);
+  }
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pts,3));
+  const mat=new THREE.PointsMaterial({color:0xc9a96e,size:0.08,transparent:true,opacity:0.35});
+  scene.add(new THREE.Points(geo,mat));
+
+  window.addEventListener('resize',()=>{
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+  });
+
+  let mx=0,my=0;
+  window.addEventListener('mousemove',e=>{
+    mx=(e.clientX/window.innerWidth-0.5)*0.5;
+    my=(e.clientY/window.innerHeight-0.5)*0.5;
+  });
+
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t+=0.001;
+    camera.position.x+=(mx*5-camera.position.x)*0.02;
+    camera.position.y+=(-my*3-camera.position.y)*0.02;
+    camera.rotation.z=t*0.05;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ============ HERO PARTICLES ============
+(function(){
+  const c=document.getElementById('hero-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+
+  function resize(){
+    renderer.setSize(c.offsetWidth,c.offsetHeight);
+    camera.aspect=c.offsetWidth/c.offsetHeight;
+    camera.updateProjectionMatrix();
+  }
+
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,1,0.1,200);
+  camera.position.z=20;
+  resize();
+  window.addEventListener('resize',resize);
+
+  // Floating petals/diamonds
+  const shapes=[];
+  for(let i=0;i<60;i++){
+    const geo=new THREE.OctahedronGeometry(0.08+Math.random()*0.12,0);
+    const mat=new THREE.MeshStandardMaterial({
+      color:0xc9a96e,metalness:0.8,roughness:0.3,
+      transparent:true,opacity:0.3+Math.random()*0.4
+    });
+    const mesh=new THREE.Mesh(geo,mat);
+    mesh.position.set(
+      (Math.random()-0.5)*30,
+      (Math.random()-0.5)*20,
+      (Math.random()-0.5)*10
+    );
+    mesh.userData={
+      vx:(Math.random()-0.5)*0.01,
+      vy:0.005+Math.random()*0.01,
+      rx:Math.random()*0.02,ry:Math.random()*0.02
+    };
+    scene.add(mesh);shapes.push(mesh);
+  }
+
+  scene.add(new THREE.AmbientLight(0xffffff,0.5));
+  const dl=new THREE.DirectionalLight(0xffd89b,2);dl.position.set(5,5,5);scene.add(dl);
+
+  function animate(){
+    requestAnimationFrame(animate);
+    shapes.forEach(m=>{
+      m.position.x+=m.userData.vx;
+      m.position.y+=m.userData.vy;
+      m.rotation.x+=m.userData.rx;
+      m.rotation.y+=m.userData.ry;
+      if(m.position.y>12){m.position.y=-12;m.position.x=(Math.random()-0.5)*30}
+    });
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ============ QUOTE CANVAS ============
+(function(){
+  const c=document.getElementById('quote-canvas');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight}
+  resize();window.addEventListener('resize',resize);
+  let t=0;
+  const circles=Array.from({length:12},(_,i)=>({
+    x:Math.random()*window.innerWidth,y:Math.random()*600,
+    r:20+Math.random()*80,speed:0.0003+Math.random()*0.0005,phase:Math.random()*Math.PI*2
+  }));
+  function draw(){
+    requestAnimationFrame(draw);t+=0.01;
+    ctx.clearRect(0,0,c.width,c.height);
+    circles.forEach(ci=>{
+      const y=ci.y+Math.sin(t*ci.speed*100+ci.phase)*30;
+      const grad=ctx.createRadialGradient(ci.x,y,0,ci.x,y,ci.r);
+      grad.addColorStop(0,'rgba(201,169,110,0.04)');
+      grad.addColorStop(1,'rgba(201,169,110,0)');
+      ctx.beginPath();ctx.arc(ci.x,y,ci.r,0,Math.PI*2);
+      ctx.fillStyle=grad;ctx.fill();
+    });
+  }
+  draw();
+})();
+
+// ============ COUNTDOWN CANVAS ============
+(function(){
+  const c=document.getElementById('count-canvas');
+  const ctx=c.getContext('2d');
+  function resize(){c.width=c.offsetWidth;c.height=c.offsetHeight}
+  resize();window.addEventListener('resize',resize);
+  const lines=Array.from({length:20},()=>({
+    x:Math.random()*1400,y:Math.random()*500,
+    len:50+Math.random()*200,angle:Math.random()*Math.PI*2,
+    speed:0.001+Math.random()*0.002,opacity:0.03+Math.random()*0.05
+  }));
+  let t=0;
+  function draw(){
+    requestAnimationFrame(draw);t+=0.01;
+    ctx.clearRect(0,0,c.width,c.height);
+    lines.forEach(l=>{
+      const x=l.x+Math.cos(l.angle+t*l.speed)*50;
+      const y=l.y+Math.sin(l.angle+t*l.speed)*30;
+      ctx.beginPath();
+      ctx.moveTo(x,y);
+      ctx.lineTo(x+Math.cos(l.angle)*l.len,y+Math.sin(l.angle)*l.len);
+      ctx.strokeStyle=`rgba(201,169,110,${l.opacity})`;
+      ctx.lineWidth=0.5;ctx.stroke();
+    });
+  }
+  draw();
+})();
+
+// ============ CLOSING 3D ============
+(function(){
+  const c=document.getElementById('closing-canvas');
+  const renderer=new THREE.WebGLRenderer({canvas:c,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+  function resize(){
+    renderer.setSize(c.offsetWidth,c.offsetHeight);
+    camera.aspect=c.offsetWidth/c.offsetHeight;
+    camera.updateProjectionMatrix();
+  }
+  const scene=new THREE.Scene();
+  const camera=new THREE.PerspectiveCamera(60,1,0.1,100);
+  camera.position.z=15;
+  resize();window.addEventListener('resize',resize);
+
+  // Big torus in background
+  const geo=new THREE.TorusGeometry(5,0.05,32,200);
+  const mat=new THREE.MeshStandardMaterial({color:0xc9a96e,metalness:0.9,roughness:0.2,transparent:true,opacity:0.3});
+  const torus=new THREE.Mesh(geo,mat);
+  scene.add(torus);
+  const geo2=new THREE.TorusGeometry(3.5,0.03,32,200);
+  const mat2=new THREE.MeshStandardMaterial({color:0xe8d5b0,metalness:0.9,roughness:0.2,transparent:true,opacity:0.2});
+  scene.add(new THREE.Mesh(geo2,mat2));
+
+  scene.add(new THREE.AmbientLight(0xffffff,0.3));
+  const dl=new THREE.DirectionalLight(0xffd89b,2);dl.position.set(3,3,5);scene.add(dl);
+
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);t+=0.005;
+    torus.rotation.x=t*0.3;torus.rotation.y=t*0.5;
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
+
+// ============ OPEN INVITATION ============
+function openInv(){
+  document.getElementById('cover').classList.add('hidden');
+  setTimeout(()=>{
+    document.getElementById('main').classList.add('visible');
+    setTimeout(()=>{
+      document.getElementById('hp').classList.add('vis');
+      setTimeout(()=>{document.getElementById('ht').classList.add('vis')},200);
+      setTimeout(()=>{document.getElementById('hd').classList.add('vis')},500);
+    },300);
+  },600);
+}
+
+// ============ SCROLL REVEAL ============
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');obs.unobserve(e.target)}});
+},{threshold:0.1,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ============ COUNTDOWN ============
+function tick(){
+  const target=new Date('2026-02-14T08:00:00');
+  const now=new Date();
+  const diff=Math.max(0,target-now);
+  const dd=Math.floor(diff/86400000);
+  const hh=Math.floor(diff%86400000/3600000);
+  const mm=Math.floor(diff%3600000/60000);
+  const ss=Math.floor(diff%60000/1000);
+  document.getElementById('d').textContent=String(dd).padStart(2,'0');
+  document.getElementById('h').textContent=String(hh).padStart(2,'0');
+  document.getElementById('m').textContent=String(mm).padStart(2,'0');
+  document.getElementById('s').textContent=String(ss).padStart(2,'0');
+}
+setInterval(tick,1000);tick();
+
+// ============ COPY ============
+function cp(id,btn){
+  const t=document.getElementById(id).textContent.replace(/\s/g,'');
+  navigator.clipboard.writeText(t).then(()=>{
+    btn.textContent='✓ Tersalin!';
+    setTimeout(()=>btn.textContent='Copy Nomor',2000);
+  });
+}
+
+// ============ RSVP ============
+let attend='hadir';
+function setA(v){
+  attend=v;
+  document.getElementById('btnH').classList.toggle('on',v==='hadir');
+  document.getElementById('btnA').classList.toggle('on',v==='absen');
+}
+function submitR(){
+  const n=document.getElementById('rName').value.trim();
+  const m=document.getElementById('rMsg').value.trim();
+  if(!n||!m){alert('Mohon isi nama dan ucapan.');return;}
+  const el=document.createElement('div');
+  el.className='wish';
+  el.innerHTML=`<p class="wish-n">${n} <span class="wish-tag ${attend}">${attend==='hadir'?'Hadir':'Tidak Hadir'}</span></p><p class="wish-m">${m}</p>`;
+  document.getElementById('wishes').prepend(el);
+  document.getElementById('rName').value='';
+  document.getElementById('rMsg').value='';
+}
+
+// ============ MUSIC ============
+let aud=null,isPlaying=false;
+function toggleMusic(){
+  if(!aud){aud=new Audio();aud.loop=true;}
+  if(isPlaying){aud.pause();document.getElementById('mBtn').classList.remove('on');isPlaying=false;}
+  else{aud.play().catch(()=>{});document.getElementById('mBtn').classList.add('on');isPlaying=true;}
+}
+</script>
+</body>
+</html>
