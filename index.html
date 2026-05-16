@@ -272,7 +272,72 @@ body{
 .strip-pill.vip{background:#f3effe;color:#5e35b1;border:1px solid #b39ddb}
 #paket-strip .strip-price{color:var(--muted);font-size:0.65rem}
 
-/* REKENING DINAMIS */
+/* ACARA CHIPS */
+.acara-chips{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.5rem}
+.acara-chip{
+  display:flex;align-items:center;gap:0.5rem;
+  border:1.5px solid var(--border);padding:0.6rem 1.1rem;
+  border-radius:2px;cursor:pointer;transition:all 0.25s ease;
+  font-size:0.92rem;background:var(--white);user-select:none;
+}
+.acara-chip:hover{border-color:var(--gold);color:var(--dark)}
+.acara-chip.active{
+  border-color:var(--gold);background:rgba(201,169,110,0.08);
+  color:var(--dark);font-weight:700;
+}
+.acara-chip .chip-check{
+  width:18px;height:18px;border-radius:3px;
+  border:1.5px solid var(--border);background:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;transition:all 0.2s ease;flex-shrink:0;
+}
+.acara-chip.active .chip-check{background:var(--gold);border-color:var(--gold);color:var(--dark)}
+.acara-custom-wrap{
+  display:flex;align-items:center;gap:0.5rem;margin-top:0.6rem;
+}
+.acara-custom-wrap input{
+  flex:1;padding:0.65rem 0.9rem;
+  border:1.5px solid var(--border);font-size:0.92rem;
+  font-family:'Lato',sans-serif;color:var(--dark);
+  background:var(--cream);outline:none;border-radius:2px;
+  transition:border-color 0.3s ease;
+}
+.acara-custom-wrap input:focus{border-color:var(--gold);background:var(--white)}
+.btn-add-acara-custom{
+  padding:0.65rem 1rem;border:1.5px solid var(--gold);
+  background:transparent;color:var(--gold);cursor:pointer;
+  font-size:0.85rem;border-radius:2px;white-space:nowrap;
+  transition:all 0.25s ease;font-family:'Lato',sans-serif;
+}
+.btn-add-acara-custom:hover{background:var(--gold);color:var(--dark)}
+
+/* ACARA FORM CARD — tiap event yang dipilih */
+.acara-card{
+  border:1px solid var(--border);border-radius:2px;
+  margin-bottom:1rem;overflow:hidden;
+  animation:slideDown 0.35s ease;
+}
+.acara-card-header{
+  background:var(--dark);color:var(--white);
+  padding:0.75rem 1.2rem;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.acara-card-title{
+  font-family:'Cinzel',serif;font-size:0.72rem;letter-spacing:0.2em;
+  color:var(--gold);text-transform:uppercase;
+}
+.acara-card-body{padding:1.2rem;background:var(--white)}
+
+/* INPUT LAINNYA BANK */
+.bank-custom-input{
+  margin-top:0.5rem;display:none;
+}
+.bank-custom-input input{
+  width:100%;padding:0.75rem 1rem;
+  border:1.5px solid var(--gold);border-radius:2px;
+  font-family:'Lato',sans-serif;font-size:1rem;color:var(--dark);
+  background:var(--white);outline:none;
+}
 .rek-item{
   border:1px solid var(--border);padding:1rem;margin-bottom:0.8rem;
   position:relative;background:var(--cream);border-radius:2px;
@@ -626,94 +691,42 @@ body{
   <div class="section-header">
     <p class="section-num">Langkah 3 dari 5</p>
     <h2 class="section-title">Detail Acara</h2>
-    <p class="section-desc">Informasi waktu dan tempat pelaksanaan akad dan resepsi.</p>
+    <p class="section-desc">Pilih acara yang ingin ditampilkan, lalu isi detail waktu dan tempatnya.</p>
   </div>
 
+  <!-- PILIH ACARA -->
   <div class="field-group">
-    <p class="field-group-title">Akad Nikah</p>
-    <div class="field-grid">
-      <div class="field" id="f-tglAkad">
-        <label>Tanggal Akad <span class="req">*</span></label>
-        <input type="date" id="tglAkad">
-        <p class="field-error">Wajib diisi.</p>
+    <p class="field-group-title">Pilih Acara yang Ditampilkan <span style="color:var(--error);font-size:0.85rem">*</span></p>
+    <p class="field-hint" style="margin-bottom:1rem">Bisa pilih lebih dari satu. Formulir detail akan muncul sesuai pilihan.</p>
+    <div class="acara-chips" id="acaraChips">
+      <div class="acara-chip" data-nama="Akad Nikah" onclick="toggleAcara(this)">
+        <span class="chip-check">✓</span> Akad Nikah
       </div>
-      <div class="field" id="f-jamAkad">
-        <label>Jam Mulai <span class="req">*</span></label>
-        <input type="time" id="jamAkad">
-        <p class="field-error">Wajib diisi.</p>
+      <div class="acara-chip" data-nama="Resepsi Pernikahan" onclick="toggleAcara(this)">
+        <span class="chip-check">✓</span> Resepsi Pernikahan
+      </div>
+      <div class="acara-chip" data-nama="Ngunduh Mantu" onclick="toggleAcara(this)">
+        <span class="chip-check">✓</span> Ngunduh Mantu
       </div>
     </div>
-    <div class="field" id="f-lokasiAkad">
-      <label>Nama Gedung / Tempat <span class="req">*</span></label>
-      <input type="text" id="lokasiAkad" placeholder="cth: Masjid Al-Ikhlas / Rumah Orang Tua">
-      <p class="field-error">Wajib diisi.</p>
+    <!-- Tambah acara custom -->
+    <div class="acara-custom-wrap" style="margin-top:0.8rem">
+      <input type="text" id="inputAcaraCustom" placeholder="Nama acara lainnya, cth: Walimah, Siraman...">
+      <button type="button" class="btn-add-acara-custom" onclick="tambahAcaraCustom()">＋ Tambah</button>
     </div>
-    <div class="field" id="f-alamatAkad">
-      <label>Alamat Lengkap <span class="req">*</span></label>
-      <textarea id="alamatAkad" style="min-height:70px" placeholder="Jl. Merdeka No. 1, Kelurahan X, Kecamatan Y, Kota Z"></textarea>
-      <p class="field-error">Wajib diisi.</p>
-    </div>
-    <div class="field">
-      <label>Link Google Maps <span class="opt">(sangat dianjurkan)</span></label>
-      <input type="url" id="mapsAkad" placeholder="https://maps.app.goo.gl/...">
-      <p class="field-hint">Buka Google Maps → cari lokasi → klik Share → Copy link.</p>
-    </div>
+    <p id="acara-error" style="display:none;color:var(--error);margin-top:0.5rem;font-size:0.88rem">⚠ Pilih minimal satu acara.</p>
   </div>
 
-  <div class="field-group">
-    <p class="field-group-title">Resepsi Pernikahan</p>
-    <div class="field">
-      <label>Lokasi Resepsi sama dengan Akad?</label>
-      <div class="radio-group">
-        <label class="radio-opt selected" onclick="toggleResepsi(true,this)">
-          <input type="radio" name="samaLokasi" value="ya" checked> Ya, sama
-        </label>
-        <label class="radio-opt" onclick="toggleResepsi(false,this)">
-          <input type="radio" name="samaLokasi" value="tidak"> Tidak, berbeda
-        </label>
-      </div>
-    </div>
-    <div class="field-grid">
-      <div class="field" id="f-tglResepsi">
-        <label>Tanggal Resepsi <span class="req">*</span></label>
-        <input type="date" id="tglResepsi">
-        <p class="field-error">Wajib diisi.</p>
-      </div>
-      <div class="field-grid" style="grid-template-columns:1fr 1fr">
-        <div class="field" id="f-jamResepsiMulai">
-          <label>Jam Mulai <span class="req">*</span></label>
-          <input type="time" id="jamResepsiMulai">
-          <p class="field-error">Wajib diisi.</p>
-        </div>
-        <div class="field">
-          <label>Jam Selesai</label>
-          <input type="time" id="jamResepsiSelesai">
-        </div>
-      </div>
-    </div>
-    <div id="resepsiLokasiBeda" style="display:none">
-      <div class="field">
-        <label>Nama Gedung / Tempat Resepsi</label>
-        <input type="text" id="lokasiResepsi" placeholder="cth: Ballroom Hotel XYZ">
-      </div>
-      <div class="field">
-        <label>Alamat Lengkap Resepsi</label>
-        <textarea id="alamatResepsi" style="min-height:70px" placeholder="Alamat lengkap tempat resepsi"></textarea>
-      </div>
-      <div class="field">
-        <label>Link Google Maps Resepsi <span class="opt">(opsional)</span></label>
-        <input type="url" id="mapsResepsi" placeholder="https://maps.app.goo.gl/...">
-      </div>
-    </div>
+  <!-- FORM ACARA DINAMIS -->
+  <div id="acaraForms">
+    <!-- Diisi otomatis saat chip dipilih -->
   </div>
 
   <!-- REKENING DINAMIS -->
   <div class="field-group">
     <p class="field-group-title">Rekening Wedding Gift <span style="font-weight:300;font-family:'Lato',sans-serif;text-transform:none;letter-spacing:0;font-size:0.82rem;color:var(--muted)">(opsional)</span></p>
     <p class="field-hint" style="margin-bottom:1rem">Tambahkan rekening bank atau e-wallet untuk menerima hadiah dari tamu. Bisa lebih dari satu.</p>
-    <div id="rekeningList">
-      <!-- rekening ditambah dari tombol di bawah -->
-    </div>
+    <div id="rekeningList"></div>
     <button type="button" class="add-rek-btn" id="addRekBtn" onclick="tambahRekening()">
       ＋ Tambah Rekening / E-Wallet
     </button>
@@ -922,7 +935,7 @@ const CONFIG = {
   nomorWA: '0812-XXXX-XXXX',
 
   // 🔗 URL GOOGLE APPS SCRIPT
-  scriptURL: 'https://script.google.com/macros/s/AKfycbyFEJA151SI9MkeCHWeeZ--5exk8wyu93Uex-1L_B4TRWY6SrlavQs1rpSPQ1efKTBxug/exec',
+  scriptURL: 'GANTI_DENGAN_URL_APPS_SCRIPT_ANDA',
 
   // 💰 PAKET — ganti harga & fitur di sini saja
   paket: [
@@ -1023,14 +1036,126 @@ function pilihPaket(card){
   setTimeout(() => goToStep(2), 420);
 }
 
+// ── ACARA DINAMIS ─────────────────────────────────────────────
+const selectedAcara = []; // array nama acara yang dipilih
+
+function toggleAcara(chip){
+  const nama = chip.dataset.nama;
+  chip.classList.toggle('active');
+  if(chip.classList.contains('active')){
+    if(!selectedAcara.includes(nama)) selectedAcara.push(nama);
+    tambahAcaraForm(nama);
+  } else {
+    const idx = selectedAcara.indexOf(nama);
+    if(idx > -1) selectedAcara.splice(idx,1);
+    hapusAcaraForm(nama);
+  }
+  document.getElementById('acara-error').style.display = 'none';
+}
+
+function tambahAcaraCustom(){
+  const input = document.getElementById('inputAcaraCustom');
+  const nama = input.value.trim();
+  if(!nama) return;
+  if(selectedAcara.includes(nama)){
+    input.value = ''; return;
+  }
+  // Buat chip baru
+  const chip = document.createElement('div');
+  chip.className = 'acara-chip active';
+  chip.dataset.nama = nama;
+  chip.dataset.custom = '1';
+  chip.innerHTML = `<span class="chip-check">✓</span> ${nama}
+    <span onclick="hapusAcaraCustom(this.parentElement)" style="margin-left:0.3rem;cursor:pointer;opacity:0.5;font-size:0.8rem">✕</span>`;
+  chip.onclick = () => {}; // non-toggle, hapus saja lewat X
+  document.getElementById('acaraChips').appendChild(chip);
+  selectedAcara.push(nama);
+  tambahAcaraForm(nama);
+  input.value = '';
+  document.getElementById('acara-error').style.display = 'none';
+}
+
+function hapusAcaraCustom(chip){
+  const nama = chip.dataset.nama;
+  const idx = selectedAcara.indexOf(nama);
+  if(idx > -1) selectedAcara.splice(idx,1);
+  hapusAcaraForm(nama);
+  chip.remove();
+}
+
+function slug(str){ return str.replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'') }
+
+function tambahAcaraForm(nama){
+  const id = slug(nama);
+  if(document.getElementById(`acara-card-${id}`)) return;
+  const div = document.createElement('div');
+  div.className = 'acara-card';
+  div.id = `acara-card-${id}`;
+  div.innerHTML = `
+    <div class="acara-card-header">
+      <span class="acara-card-title">✦ ${nama}</span>
+    </div>
+    <div class="acara-card-body">
+      <div class="field-grid">
+        <div class="field">
+          <label>Tanggal <span class="req">*</span></label>
+          <input type="date" id="tgl-${id}" class="acara-tgl">
+        </div>
+        <div class="field-grid" style="grid-template-columns:1fr 1fr">
+          <div class="field">
+            <label>Jam Mulai</label>
+            <input type="time" id="mulai-${id}">
+          </div>
+          <div class="field">
+            <label>Jam Selesai</label>
+            <input type="time" id="selesai-${id}">
+          </div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:0.8rem">
+        <label>Nama Gedung / Tempat <span class="req">*</span></label>
+        <input type="text" id="lokasi-${id}" class="acara-lokasi" placeholder="cth: Masjid Al-Ikhlas / Gedung Serbaguna">
+      </div>
+      <div class="field">
+        <label>Alamat Lengkap <span class="req">*</span></label>
+        <textarea id="alamat-${id}" class="acara-alamat" style="min-height:70px"
+          placeholder="Jl. Merdeka No. 1, Kelurahan X, Kecamatan Y, Kota Z"></textarea>
+      </div>
+      <div class="field">
+        <label>Link Google Maps <span class="opt">(sangat dianjurkan)</span></label>
+        <input type="url" id="maps-${id}" placeholder="https://maps.app.goo.gl/...">
+        <p class="field-hint">Buka Google Maps → cari lokasi → klik Share → Copy link.</p>
+      </div>
+    </div>`;
+  document.getElementById('acaraForms').appendChild(div);
+}
+
+function hapusAcaraForm(nama){
+  const id = slug(nama);
+  const el = document.getElementById(`acara-card-${id}`);
+  if(el) el.remove();
+}
+
+function getAcaraData(){
+  return selectedAcara.map(nama => {
+    const id = slug(nama);
+    return {
+      nama,
+      tgl: document.getElementById(`tgl-${id}`)?.value || '',
+      mulai: document.getElementById(`mulai-${id}`)?.value || '',
+      selesai: document.getElementById(`selesai-${id}`)?.value || '',
+      lokasi: document.getElementById(`lokasi-${id}`)?.value || '',
+      alamat: document.getElementById(`alamat-${id}`)?.value || '',
+      maps: document.getElementById(`maps-${id}`)?.value || '',
+    };
+  });
+}
+
 // ── REKENING DINAMIS ──────────────────────────────────────────
 const BANK_OPTIONS = ['BCA','BNI','BRI','Mandiri','BSI','DANA','GoPay','OVO','ShopeePay','Lainnya'];
 
 function tambahRekening(){
-  if(rekeningCount >= 4){
-    alert('Maksimal 4 rekening/e-wallet.');
-    return;
-  }
+  if(rekeningCount >= 6){ alert('Maksimal 6 rekening/e-wallet.'); return; }
   rekeningCount++;
   const idx = rekeningCount;
   const list = document.getElementById('rekeningList');
@@ -1045,10 +1170,13 @@ function tambahRekening(){
     <div class="field-grid">
       <div class="field">
         <label>Bank / E-Wallet</label>
-        <select id="bank-${idx}">
+        <select id="bank-${idx}" onchange="cekLainnya(this,${idx})">
           <option value="">-- Pilih --</option>
           ${BANK_OPTIONS.map(b=>`<option>${b}</option>`).join('')}
         </select>
+        <div class="bank-custom-input" id="bank-custom-wrap-${idx}">
+          <input type="text" id="bank-custom-${idx}" placeholder="Tulis nama bank / e-wallet Anda">
+        </div>
       </div>
       <div class="field">
         <label>Nomor Rekening / Akun</label>
@@ -1060,10 +1188,14 @@ function tambahRekening(){
       <input type="text" id="atasnama-${idx}" placeholder="Nama sesuai rekening">
     </div>`;
   list.appendChild(div);
+  if(rekeningCount >= 6) document.getElementById('addRekBtn').style.display = 'none';
+}
 
-  // Sembunyikan tombol tambah jika sudah 4
-  if(rekeningCount >= 4){
-    document.getElementById('addRekBtn').style.display = 'none';
+function cekLainnya(sel, idx){
+  const wrap = document.getElementById(`bank-custom-wrap-${idx}`);
+  wrap.style.display = sel.value === 'Lainnya' ? 'block' : 'none';
+  if(sel.value !== 'Lainnya'){
+    document.getElementById(`bank-custom-${idx}`).value = '';
   }
 }
 
@@ -1072,18 +1204,18 @@ function hapusRekening(idx){
   if(el) el.remove();
   rekeningCount--;
   document.getElementById('addRekBtn').style.display = 'flex';
-  // Renumber label
   document.querySelectorAll('.rek-item').forEach((item, i) => {
     item.querySelector('.rek-label').textContent = `Rekening ke-${i+1}`;
   });
 }
 
-// Kumpulkan semua data rekening untuk submit
 function getRekeningData(){
   const result = [];
   document.querySelectorAll('.rek-item').forEach(item => {
     const id = item.id.split('-')[1];
-    const bank = document.getElementById(`bank-${id}`)?.value || '';
+    const bankSel = document.getElementById(`bank-${id}`)?.value || '';
+    const bankCustom = document.getElementById(`bank-custom-${id}`)?.value || '';
+    const bank = bankSel === 'Lainnya' ? (bankCustom || 'Lainnya') : bankSel;
     const norek = document.getElementById(`norek-${id}`)?.value || '';
     const atasnama = document.getElementById(`atasnama-${id}`)?.value || '';
     if(bank || norek) result.push(`${bank} · ${norek} · a/n ${atasnama}`);
@@ -1163,15 +1295,23 @@ function validateStep(step){
     });
   }
   if(step === 3){
-    ['tglAkad','jamAkad','lokasiAkad','alamatAkad','tglResepsi','jamResepsiMulai'].forEach(id => {
-      const el = document.getElementById(id);
-      const wrap = document.getElementById('f-'+id);
-      if(wrap){
-        const empty = !el.value.trim();
-        wrap.classList.toggle('has-error', empty);
-        el.classList.toggle('error', empty);
-        if(empty) valid = false;
-      }
+    // Minimal 1 acara harus dipilih
+    if(selectedAcara.length === 0){
+      document.getElementById('acara-error').style.display = 'block';
+      valid = false;
+    }
+    // Cek field wajib di tiap acara form
+    selectedAcara.forEach(nama => {
+      const id = slug(nama);
+      const tgl = document.getElementById(`tgl-${id}`);
+      const lokasi = document.getElementById(`lokasi-${id}`);
+      const alamat = document.getElementById(`alamat-${id}`);
+      if(tgl && !tgl.value){ tgl.style.borderColor='var(--error)'; valid=false; }
+      else if(tgl) tgl.style.borderColor='';
+      if(lokasi && !lokasi.value.trim()){ lokasi.style.borderColor='var(--error)'; valid=false; }
+      else if(lokasi) lokasi.style.borderColor='';
+      if(alamat && !alamat.value.trim()){ alamat.style.borderColor='var(--error)'; valid=false; }
+      else if(alamat) alamat.style.borderColor='';
     });
   }
   return valid;
@@ -1205,11 +1345,14 @@ function showFile(input, listId){
 // ── SUMMARY ───────────────────────────────────────────────────
 function buildSummary(){
   const paket = document.querySelector('.paket-card.selected')?.dataset.paket || '-';
-  const tglA = document.getElementById('tglAkad').value;
-  const tglR = document.getElementById('tglResepsi').value;
   const tema = document.querySelector('[name=tema]:checked')?.value || 'Belum dipilih';
   const rekening = getRekeningData() || '-';
   const fmt = d => d ? new Date(d).toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '-';
+
+  // Baris acara
+  const acaraRows = getAcaraData().map(a => [
+    a.nama, `${fmt(a.tgl)}${a.mulai ? ' · '+a.mulai+' WIB' : ''}${a.selesai ? ' – '+a.selesai : ''} · ${a.lokasi}`
+  ]);
 
   const rows = [
     ['Paket', paket],
@@ -1217,11 +1360,7 @@ function buildSummary(){
     ['WhatsApp', document.getElementById('whatsapp').value],
     ['Pengantin Pria', document.getElementById('namaPria').value],
     ['Pengantin Wanita', document.getElementById('namaWanita').value],
-    ['Tanggal Akad', fmt(tglA)],
-    ['Jam Akad', document.getElementById('jamAkad').value + ' WIB'],
-    ['Lokasi Akad', document.getElementById('lokasiAkad').value],
-    ['Tanggal Resepsi', fmt(tglR)],
-    ['Jam Resepsi', document.getElementById('jamResepsiMulai').value + ' WIB'],
+    ...acaraRows,
     ['Tema', tema],
     ['Rekening', rekening],
   ];
@@ -1244,9 +1383,10 @@ async function submitForm(){
   document.getElementById('loadingOverlay').classList.add('show');
 
   const orderId = 'ORD-' + Date.now().toString(36).toUpperCase();
-  const tglA = document.getElementById('tglAkad').value;
-  const tglR = document.getElementById('tglResepsi').value;
   const fmt = d => d ? new Date(d).toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : '';
+  const acaraData = getAcaraData().map(a =>
+    `[${a.nama}] ${fmt(a.tgl)} ${a.mulai}–${a.selesai} | ${a.lokasi} | ${a.alamat} | Maps: ${a.maps}`
+  ).join(' || ');
 
   const data = {
     orderId,
@@ -1266,17 +1406,7 @@ async function submitForm(){
     ayahWanita: document.getElementById('ayahWanita').value,
     ibuWanita: document.getElementById('ibuWanita').value,
     urutanWanita: document.getElementById('urutanWanita').value,
-    tglAkad: fmt(tglA),
-    jamAkad: document.getElementById('jamAkad').value,
-    lokasiAkad: document.getElementById('lokasiAkad').value,
-    alamatAkad: document.getElementById('alamatAkad').value,
-    mapsAkad: document.getElementById('mapsAkad').value,
-    tglResepsi: fmt(tglR),
-    jamResepsiMulai: document.getElementById('jamResepsiMulai').value,
-    jamResepsiSelesai: document.getElementById('jamResepsiSelesai').value,
-    lokasiResepsi: document.getElementById('lokasiResepsi').value,
-    alamatResepsi: document.getElementById('alamatResepsi').value,
-    mapsResepsi: document.getElementById('mapsResepsi').value,
+    acara: acaraData,
     rekening: getRekeningData(),
     tema: document.querySelector('[name=tema]:checked')?.value || '',
     quote: document.getElementById('quote').value,
