@@ -368,24 +368,7 @@ body{
 }
 .add-rek-btn:hover{border-color:var(--gold);color:var(--gold)}
 
-/* METODE FOTO TOGGLE */
-.metode-toggle{
-  display:flex;gap:0.5rem;margin-bottom:1rem;
-}
-.met-btn{
-  flex:1;padding:0.7rem 0.5rem;
-  border:1.5px solid var(--border);background:var(--cream);
-  color:var(--muted);font-family:'Lato',sans-serif;font-size:0.9rem;
-  cursor:pointer;transition:all 0.3s ease;border-radius:2px;
-  display:flex;align-items:center;justify-content:center;gap:0.4rem;
-}
-.met-btn:hover{border-color:var(--gold);color:var(--dark)}
-.met-btn.active{
-  border-color:var(--gold);background:rgba(201,169,110,0.08);
-  color:var(--dark);font-weight:700;
-}
-
-/* UPLOAD BOX */
+/* PANEL FOTO — area yang disembunyikan saat Basic */
 .upload-box{
   border:2px dashed var(--border);border-radius:2px;
   padding:2rem;text-align:center;cursor:pointer;
@@ -794,73 +777,28 @@ body{
       <!-- Foto Pria -->
       <div class="field">
         <label>Foto Pengantin Pria <span class="req">*</span></label>
-        <div class="metode-toggle">
-          <button type="button" class="met-btn active" onclick="setMetode('pria','upload',this)">📤 Upload Langsung</button>
-          <button type="button" class="met-btn" onclick="setMetode('pria','drive',this)">🔗 Via Google Drive</button>
-        </div>
-        <div id="panel-upload-pria">
-          <div class="upload-box" onclick="document.getElementById('fotoPria').click()">
-            <span class="upload-icon">📷</span>
-            <div class="upload-text">
-              <strong>Klik untuk pilih foto</strong>
-              JPG / PNG · Maks 10 MB
-            </div>
-            <input type="file" id="fotoPria" accept="image/*" onchange="showFile(this,'listPria')">
-          </div>
-          <div class="file-list" id="listPria"></div>
-        </div>
-        <div id="panel-drive-pria" style="display:none">
-          <input type="url" id="drivePria" placeholder="https://drive.google.com/file/d/...">
-          <p class="field-hint">Share foto ke "Anyone with the link" lalu paste link-nya di sini.</p>
-        </div>
+        <p class="field-hint" style="margin-bottom:0.6rem">
+          Upload foto ke Google Drive → klik kanan → <strong>Share</strong> → <strong>Anyone with the link</strong> → copy link → paste di sini.
+        </p>
+        <input type="url" id="drivePria" placeholder="https://drive.google.com/file/d/...">
       </div>
 
       <!-- Foto Wanita -->
       <div class="field">
         <label>Foto Pengantin Wanita <span class="req">*</span></label>
-        <div class="metode-toggle">
-          <button type="button" class="met-btn active" onclick="setMetode('wanita','upload',this)">📤 Upload Langsung</button>
-          <button type="button" class="met-btn" onclick="setMetode('wanita','drive',this)">🔗 Via Google Drive</button>
-        </div>
-        <div id="panel-upload-wanita">
-          <div class="upload-box" onclick="document.getElementById('fotoWanita').click()">
-            <span class="upload-icon">📷</span>
-            <div class="upload-text">
-              <strong>Klik untuk pilih foto</strong>
-              JPG / PNG · Maks 10 MB
-            </div>
-            <input type="file" id="fotoWanita" accept="image/*" onchange="showFile(this,'listWanita')">
-          </div>
-          <div class="file-list" id="listWanita"></div>
-        </div>
-        <div id="panel-drive-wanita" style="display:none">
-          <input type="url" id="driveWanita" placeholder="https://drive.google.com/file/d/...">
-          <p class="field-hint">Share foto ke "Anyone with the link" lalu paste link-nya di sini.</p>
-        </div>
+        <p class="field-hint" style="margin-bottom:0.6rem">
+          Upload foto ke Google Drive → klik kanan → <strong>Share</strong> → <strong>Anyone with the link</strong> → copy link → paste di sini.
+        </p>
+        <input type="url" id="driveWanita" placeholder="https://drive.google.com/file/d/...">
       </div>
 
       <!-- Foto Galeri -->
       <div class="field">
         <label>Foto Prewedding / Galeri <span class="opt">(opsional · khusus Premium & VIP)</span></label>
-        <div class="metode-toggle">
-          <button type="button" class="met-btn active" onclick="setMetode('galeri','upload',this)">📤 Upload Langsung</button>
-          <button type="button" class="met-btn" onclick="setMetode('galeri','drive',this)">🔗 Via Google Drive</button>
-        </div>
-        <div id="panel-upload-galeri">
-          <div class="upload-box" onclick="document.getElementById('fotoGaleri').click()">
-            <span class="upload-icon">🖼</span>
-            <div class="upload-text">
-              <strong>Klik untuk pilih beberapa foto</strong>
-              Bisa pilih sekaligus · Maks 10 foto
-            </div>
-            <input type="file" id="fotoGaleri" accept="image/*" multiple onchange="showFile(this,'listGaleri')">
-          </div>
-          <div class="file-list" id="listGaleri"></div>
-        </div>
-        <div id="panel-drive-galeri" style="display:none">
-          <input type="url" id="driveGaleri" placeholder="https://drive.google.com/drive/folders/...">
-          <p class="field-hint">Upload semua foto ke satu folder Google Drive, share "Anyone with the link", lalu paste link folder-nya.</p>
-        </div>
+        <p class="field-hint" style="margin-bottom:0.6rem">
+          Upload semua foto ke <strong>satu folder</strong> Google Drive → klik kanan folder → <strong>Share</strong> → <strong>Anyone with the link</strong> → copy link → paste di sini.
+        </p>
+        <input type="url" id="driveGaleri" placeholder="https://drive.google.com/drive/folders/...">
       </div>
 
     </div>
@@ -1221,17 +1159,6 @@ function getRekeningData(){
     if(bank || norek) result.push(`${bank} · ${norek} · a/n ${atasnama}`);
   });
   return result.join(' | ');
-}
-
-// ── METODE FOTO ───────────────────────────────────────────────
-function setMetode(target, metode, btn){
-  // Update tombol
-  const parent = btn.closest('.field');
-  parent.querySelectorAll('.met-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  // Show/hide panel
-  document.getElementById(`panel-upload-${target}`).style.display = metode === 'upload' ? 'block' : 'none';
-  document.getElementById(`panel-drive-${target}`).style.display = metode === 'drive' ? 'block' : 'none';
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────
