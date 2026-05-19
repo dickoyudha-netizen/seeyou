@@ -272,6 +272,34 @@ body{
 .strip-pill.vip{background:#f3effe;color:#5e35b1;border:1px solid #b39ddb}
 #paket-strip .strip-price{color:var(--muted);font-size:0.65rem}
 
+/* AUTO-SAVE INDICATOR */
+.draft-badge{
+  position:fixed;bottom:1.5rem;left:1.5rem;z-index:998;
+  background:var(--white);border:1px solid var(--border);
+  padding:0.4rem 0.9rem;font-size:0.72rem;color:var(--muted);
+  display:none;align-items:center;gap:0.4rem;
+  box-shadow:0 2px 12px rgba(0,0,0,0.08);
+  font-family:'Cinzel',serif;letter-spacing:0.1em;
+}
+.draft-badge.show{display:flex}
+.draft-dot{width:6px;height:6px;border-radius:50%;background:#4a9c6f}
+.restore-banner{
+  background:#f5edda;border:1px solid #dfc98a;
+  padding:0.9rem 1.2rem;margin-bottom:1.2rem;
+  display:none;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;
+}
+.restore-banner.show{display:flex}
+.restore-text{font-size:0.88rem;color:var(--dark)}
+.restore-text strong{color:var(--gold)}
+.restore-btns{display:flex;gap:0.5rem}
+.btn-restore,.btn-discard{
+  padding:0.45rem 1rem;font-family:'Cinzel',serif;font-size:0.6rem;
+  letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;border:none;
+}
+.btn-restore{background:var(--gold);color:var(--dark)}
+.btn-discard{background:transparent;border:1px solid var(--border);color:var(--muted)}
+
 /* ACARA CHIPS */
 .acara-chips{display:flex;flex-wrap:wrap;gap:0.6rem;margin-top:0.5rem}
 .acara-chip{
@@ -488,6 +516,11 @@ body{
   <p class="loading-text">Mengirim data...</p>
 </div>
 
+<!-- Auto-save indicator -->
+<div class="draft-badge" id="draftBadge">
+  <span class="draft-dot"></span> Draft tersimpan
+</div>
+
 <header class="site-header">
   <div class="brand">See You Invitation</div>
 </header>
@@ -525,6 +558,16 @@ body{
 </div>
 
 <div class="form-container">
+
+<!-- Banner restore draft -->
+<div class="restore-banner" id="restoreBanner">
+  <p class="restore-text">💾 Anda memiliki <strong>draft yang belum terkirim</strong>. Lanjutkan pengisian?</p>
+  <div class="restore-btns">
+    <button class="btn-restore" onclick="restoreDraft()">Lanjutkan</button>
+    <button class="btn-discard" onclick="discardDraft()">Mulai Baru</button>
+  </div>
+</div>
+
 <div id="success-screen">
   <div class="success-icon">✓</div>
   <h2>Pesanan Terkirim!</h2>
@@ -873,7 +916,7 @@ const CONFIG = {
   nomorWA: '0812-XXXX-XXXX',
 
   // 🔗 URL GOOGLE APPS SCRIPT
-  scriptURL: 'GANTI_DENGAN_URL_APPS_SCRIPT_ANDA',
+  scriptURL: 'https://script.google.com/macros/s/AKfycbxUHcVSoqz4zRP5GgAd_kgsBojg7kyY4xsh4shd7EP9_jwAMEdw8HHLXNFDE54k-JDEBA/exec',
 
   // 💰 PAKET — ganti harga & fitur di sini saja
   paket: [
@@ -935,6 +978,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const waEl = document.getElementById('nomorWA');
   if(waEl) waEl.textContent = CONFIG.nomorWA;
   renderPaket();
+  cekDraft();
+  pasangAutoSave();
 });
 
 // ── RENDER PAKET ──────────────────────────────────────────────
@@ -1299,6 +1344,154 @@ function buildSummary(){
     </div>`).join('');
 }
 
+// ── AUTO-SAVE ─────────────────────────────────────────────────
+const DRAFT_KEY = 'syi_draft_v1';
+let saveTimer = null;
+
+// Simpan semua isi form ke localStorage
+function saveDraft() {
+  try {
+    const paketEl = document.querySelector('.paket-card.selected');
+    const draft = {
+      ts: Date.now(),
+      step: currentStep,
+      paket: paketEl ? paketEl.dataset.paket : '',
+      // Step 2
+      namaPemesan:    val('namaPemesan'),
+      whatsapp:       val('whatsapp'),
+      hubungan:       val('hubungan'),
+      namaPria:       val('namaPria'),
+      panggilanPria:  val('panggilanPria'),
+      ayahPria:       val('ayahPria'),
+      ibuPria:        val('ibuPria'),
+      urutanPria:     val('urutanPria'),
+      namaWanita:     val('namaWanita'),
+      panggilanWanita:val('panggilanWanita'),
+      ayahWanita:     val('ayahWanita'),
+      ibuWanita:      val('ibuWanita'),
+      urutanWanita:   val('urutanWanita'),
+      // Step 3 acara
+      acaraSelected: selectedAcara.slice(),
+      // Step 4
+      tema:       document.querySelector('[name=tema]:checked') ? document.querySelector('[name=tema]:checked').value : '',
+      quote:      val('quote'),
+      loveStory:  val('loveStory'),
+      musikLink:  val('musikLink'),
+      drivePria:  val('drivePria'),
+      driveWanita:val('driveWanita'),
+      driveGaleri:val('driveGaleri'),
+      catatan:    val('catatan'),
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    showBadge();
+  } catch(e) { /* localStorage tidak tersedia */ }
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value : '';
+}
+
+function showBadge() {
+  const badge = document.getElementById('draftBadge');
+  if (!badge) return;
+  badge.classList.add('show');
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => badge.classList.remove('show'), 3000);
+}
+
+// Cek apakah ada draft saat halaman dibuka
+function cekDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    // Draft lebih dari 7 hari — abaikan
+    if (Date.now() - draft.ts > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(DRAFT_KEY);
+      return;
+    }
+    document.getElementById('restoreBanner').classList.add('show');
+  } catch(e) {}
+}
+
+// Pulihkan isi form dari draft
+function restoreDraft() {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY);
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    document.getElementById('restoreBanner').classList.remove('show');
+
+    // Pilih paket
+    if (d.paket) {
+      const card = document.querySelector('.paket-card[data-paket="' + d.paket + '"]');
+      if (card) pilihPaket(card);
+    }
+
+    // Isi field teks
+    const fields = ['namaPemesan','whatsapp','namaPria','panggilanPria','ayahPria','ibuPria',
+                    'namaWanita','panggilanWanita','ayahWanita','ibuWanita',
+                    'quote','loveStory','musikLink','drivePria','driveWanita','driveGaleri','catatan'];
+    fields.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el && d[id]) el.value = d[id];
+    });
+
+    // Select fields
+    ['hubungan','urutanPria','urutanWanita'].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el && d[id]) el.value = d[id];
+    });
+
+    // Tema
+    if (d.tema) {
+      const radio = document.querySelector('[name=tema][value="' + d.tema + '"]');
+      if (radio) pilihTema(radio.closest('.radio-opt'));
+    }
+
+    // Acara
+    if (d.acaraSelected && d.acaraSelected.length > 0) {
+      d.acaraSelected.forEach(function(nama) {
+        const chip = document.querySelector('.acara-chip[data-nama="' + nama + '"]');
+        if (chip && !chip.classList.contains('active')) {
+          toggleAcara(chip);
+        } else if (!chip) {
+          // Acara custom
+          document.getElementById('inputAcaraCustom').value = nama;
+          tambahAcaraCustom();
+        }
+      });
+    }
+
+    // Lompat ke step terakhir
+    if (d.step && d.step > 1) goToStep(d.step);
+
+  } catch(e) {}
+}
+
+function discardDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+  document.getElementById('restoreBanner').classList.remove('show');
+}
+
+function clearDraft() {
+  localStorage.removeItem(DRAFT_KEY);
+}
+
+// Pasang listener auto-save di semua input (debounce 1.5 detik)
+function pasangAutoSave() {
+  let debounce;
+  document.getElementById('orderForm').addEventListener('input', function() {
+    clearTimeout(debounce);
+    debounce = setTimeout(saveDraft, 1500);
+  });
+  document.getElementById('orderForm').addEventListener('change', function() {
+    clearTimeout(debounce);
+    debounce = setTimeout(saveDraft, 1500);
+  });
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────
 async function submitForm(){
   if(!document.getElementById('agreeTerms').checked){
@@ -1356,6 +1549,7 @@ async function submitForm(){
     document.querySelector('.form-hero').style.display = 'none';
     document.getElementById('orderId').textContent = orderId;
     document.getElementById('success-screen').style.display = 'block';
+    clearDraft(); // hapus draft setelah berhasil terkirim
     window.scrollTo({top:0, behavior:'smooth'});
   } catch(err){
     document.getElementById('loadingOverlay').classList.remove('show');
