@@ -916,7 +916,7 @@ const CONFIG = {
   nomorWA: '0812-XXXX-XXXX',
 
   // 🔗 URL GOOGLE APPS SCRIPT
-  scriptURL: 'https://script.google.com/macros/s/AKfycbxUHcVSoqz4zRP5GgAd_kgsBojg7kyY4xsh4shd7EP9_jwAMEdw8HHLXNFDE54k-JDEBA/exec',
+  scriptURL: 'GANTI_DENGAN_URL_APPS_SCRIPT_ANDA',
 
   // 💰 PAKET — ganti harga & fitur di sini saja
   paket: [
@@ -1532,9 +1532,9 @@ async function submitForm(){
     quote: document.getElementById('quote').value,
     loveStory: document.getElementById('loveStory').value,
     musikLink: document.getElementById('musikLink').value,
-    fotoPriaLink: document.getElementById('drivePria')?.value || '(upload langsung)',
-    fotoWanitaLink: document.getElementById('driveWanita')?.value || '(upload langsung)',
-    fotoGaleriLink: document.getElementById('driveGaleri')?.value || '(upload langsung)',
+    fotoPriaLink: document.getElementById('drivePria')?.value.trim() || '',
+    fotoWanitaLink: document.getElementById('driveWanita')?.value.trim() || '',
+    fotoGaleriLink: document.getElementById('driveGaleri')?.value.trim() || '',
     catatan: document.getElementById('catatan').value,
   };
 
